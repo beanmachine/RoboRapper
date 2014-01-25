@@ -144,14 +144,19 @@ for i in xrange(len(song)):
    stichCmd.append('outwav/_' + str(i) + '.mp3')
 
 rhash = random.getrandbits(128)
-fname ='final_'+str(rhash)+'.mp3' 
+fname ='inter_'+str(rhash)+'.mp3'
+fname2 = 'final_' + str(random.getrandbits(128))+'.mp3'
 target = open(fname, 'w')
 subprocess.call(stichCmd, stdout=target)
 target.close()
+print ['./padder.sh', ' '+fname, ' '+fname2]
+subprocess.call(['./padder.sh', 
+                 fname,
+                 fname2]);
 
-subprocess.call(["rm", "outwav/*"])
+#subprocess.call(["rm", "outwav/*"])
 
-print json.dumps({'fname':fname,
+print json.dumps({'fname':fname2,
             'lines':song})
 #    print wordLen
 #    engine.setProperty('voice', engine.getProperty('voices')[i % len(engine.getProperty('voices'))].id)
