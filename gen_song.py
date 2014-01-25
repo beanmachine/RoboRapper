@@ -1,14 +1,17 @@
+import os
 import urllib
 from inspect import getmembers, isfunction
 import urllib2
 import random
 import requests
+import json
 import math
 import string
 import re
 import time
 import sys
-import pyttsx
+import subprocess
+import random 
 import copy
 import types
 from pprint import pprint
@@ -57,7 +60,6 @@ def genLine(song, count):
 
     response = requests.post(url, data=params) 
     if response.status_code == 200:
-        print response
         js = response.json()
         line = js['line']
         song.append(line)
@@ -95,33 +97,68 @@ def genSong(lines, song, count, chorus):
 
     genSong(lines, song, count, chorus)
 
-genSong(lines, chorus, 1, [])
-genSong(lines, song, 16, chorus)
+genSong(lines, song, 3, [])
+
+#genSong(lines, chorus, 1, [])
+#genSong(lines, song, 16, chorus)
 
 for line in song:
     line = line + ".. "
     filter(lambda x: x in string.printable, line)
 
+"""
 for i in range(0, len(song)):
     print song[i]
     if (i+1)%4 == 0:
         print ""
-
-engine = pyttsx.init('espeak', True)
+"""
+#engine = pyttsx.init('espeak', True)
 
 secondsPerLine = 6.0 
 linesPerMinute = 96.0/secondsPerLine
 
 #print engine.getProperty('voice')
- 
-for i in range(0, len(song)):
-    wordLen =len(song[i].split(' '))
+with open(os.devnull, "w") as fnull:
+    for i in range(0, len(song)):
+        wordLen =len(song[i].split(' '))
+
+
+        subprocess.call(['espeak',
+                '"'+song[i] + '" ',
+                '-p 10 ',
+                '-venglish-us',
+                '-s ' + str(int(linesPerMinute*wordLen)) + ' ',
+                '-woutwav/_' + str(i) + '.wav'
+                ])
+
+        subprocess.call(['lame',
+                '-h',
+                'outwav/_' + str(i) + '.wav',
+                'outwav/_' + str(i) + '.mp3'],
+                stdout = fnull,
+                stderr = fnull
+                )
+
+stichCmd = ['cat']
+for i in xrange(len(song)):
+   stichCmd.append('outwav/_' + str(i) + '.mp3')
+
+rhash = random.getrandbits(128)
+fname ='final_'+str(rhash)+'.mp3' 
+target = open(fname, 'w')
+subprocess.call(stichCmd, stdout=target)
+target.close()
+
+subprocess.call(["rm", "outwav/*"])
+
+print json.dumps({'fname':fname,
+            'lines':song})
 #    print wordLen
 #    engine.setProperty('voice', engine.getProperty('voices')[i % len(engine.getProperty('voices'))].id)
-    engine.setProperty('voice', engine.getProperty('voices')[15].id)
-    engine.setProperty('rate', int(linesPerMinute*wordLen))
-    engine.say(song[i])
+#    engine.setProperty('voice', engine.getProperty('voices')[15].id)
+#    engine.setProperty('rate', int(linesPerMinute*wordLen))
+#    engine.say(song[i])
 #    print song[i], engine.getProperty('voices')[15].id
 
 
-engine.runAndWait()
+#engine.runAndWait()
