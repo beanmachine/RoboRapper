@@ -1,4 +1,5 @@
 import urllib
+from inspect import getmembers, isfunction
 import urllib2
 import random
 import requests
@@ -9,6 +10,7 @@ import time
 import sys
 import pyttsx
 import copy
+import types
 from pprint import pprint
 
 table = string.maketrans("","")
@@ -55,6 +57,7 @@ def genLine(song, count):
 
     response = requests.post(url, data=params) 
     if response.status_code == 200:
+        print response
         js = response.json()
         line = js['line']
         song.append(line)
@@ -119,5 +122,6 @@ for i in range(0, len(song)):
     engine.setProperty('rate', int(linesPerMinute*wordLen))
     engine.say(song[i])
 #    print song[i], engine.getProperty('voices')[15].id
+
 
 engine.runAndWait()
